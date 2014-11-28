@@ -1,7 +1,11 @@
 import httplib, json, urllib
 import requests
+#import Adafruit_DHT
 
-def getWheather(city='Madrid,es'):
+def getInsideWeather():
+  return Adafruit_DHT.read_retry(Adafruit_DHT.DHT22, 4)
+
+def getOutsideWeather(city='Madrid,es'):
   url_w = 'api.openweathermap.org'
   method_w = '/data/2.5/weather?q='+city
 
@@ -16,34 +20,39 @@ def getWheather(city='Madrid,es'):
   data_w = json.loads(data_JSON)
   #print data_JSON
   celsius = data_w['main']['temp'] - 273.15
+  print data_w['name'], celsius, 'Celsius', data_w['weather'][0]['description']
 
 def getHollandArt():
-  url_art = 'api.artsholland.com'
+  url_art = 'http://api.artsholland.com'
   method_art = '/rest/event.json?locality=amsterdam'
 
-  conn_art = httplib.HTTPConnection(url_art)
-  conn_art.request('GET', method_art)
+  r = requests.get(url_art+method_art)
+  r.json()
+#  data = json.loads(r.json())
 
-  resp_art = conn_art.getresponse()
-  print 'Art status:', resp_art.status, resp_art.reason
+  #conn_art = httplib.HTTPConnection(url_art)
+  #conn_art.request('GET', method_art)
 
-  print data_w['name'], celsius, 'Celsius', data_w['weather'][0]['description']
+  #resp_art = conn_art.getresponse()
+  print r.json()
+
 
 
 def emt():
-  headers = {'content-type': 'application/json',
-            'idClient': 'WEB.SERV.arianjm@gmail.com',
-            'passKey': 'E5978EEB-67BA-4FEB-9532-B866DBB4F579'}
+  headers = {'content-type': 'application/json'}
+            #'idClient': 'WEB.SERV.arianjm@gmail.com',
+            #'passKey': 'E5978EEB-67BA-4FEB-9532-B866DBB4F579'}
   url = 'https://openbus.emtmadrid.es:9443/emt-proxy-server/last/'
-  method = '/bus/GetListLines.php'
+  method = 'bus/GetListLines.php'
   params = {#'idClient': 'WEB.SERV.arianjm@gmail.com',
             #'passKey': 'E5978EEB-67BA-4FEB-9532-B866DBB4F579',
             'SelectDate': '28/11/2014'}
-#  data = {'idClient': 'WEB.SERV.arianjm@gmail.com', 'passKey': 'E5978EEB-67BA-4FEB-9532-B866DBB4F579'}
+  data = {'idClient': 'WEB.SERV.arianjm@gmail.com', 'passKey': 'E5978EEB-67BA-4FEB-9532-B866DBB4F579'}
 #  params = urllib.urlencode(
 
-  r = requests.post(url+method, params=params, headers=headers, verify=False)
+  r = requests.post(url+method, data=data, params=params, headers=headers, verify=False)
 
   print r.text
 
-emt()
+
+getHollandArt()
