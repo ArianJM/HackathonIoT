@@ -1,22 +1,32 @@
-import json
+from flask import Flask
+import weather
 import requests
-#import Adafruit_DHT
-import time
+import Adafruit_DHT
 
-def getInsideWeather():
+app = Flask(__name__)
+
+@app.route("/")
+def hello():
+  return "Hello World!"
+
+@app.route("/home")
+def home():
   h,t = Adafruit_DHT.read_retry(Adafruit_DHT.DHT22, 4)
   return 'Temperatura:', t, 'Celsius. Humedad:', h
 
-def getOutsideWeather(city='Madrid,es'):
+@app.route("/city/weather")
+def city_weather():
   url_w = 'http://api.openweathermap.org'
-  method_w = '/data/2.5/weather?q='+city
+  method_w = '/data/2.5/weather?q=Madrid,es'
 
   r = requests.get(url_w+method_w)
   data = r.json()
   celsius = data['main']['temp'] - 273.15
-  return data['name'], celsius, 'Celsius', data['weather'][0]['description']
+  ret = data['name']+' '+str(celsius)+'C ' + data['weather'][0]['description']
+  return ret
 
-def getAmsterdamArt():
+@app.route("/city/events")
+def city_events():
   url_art = 'http://api.artsholland.com'
   method_art = '/rest/event.json?locality=amsterdam'
 
@@ -28,11 +38,9 @@ def getAmsterdamArt():
       events += 'Evento:'+res['description']+'\n'
       events += 'Inicio:'+res['hasBeginning']+'\n'
       events += 'Fin:'+res['hasEnd']+'\n\n'
-
+  
   return events
 
-while True:
-  print getInsideWeather()
-  print getOutsideWeather()
-  print getAmsterdamArt()
-  time.sleep(60)
+if __name__ == "__main__":
+  app.run(host='0.0.0.0', port=80, debug=True)
+
