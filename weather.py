@@ -1,40 +1,30 @@
-import httplib, json, urllib
+import json
 import requests
-#import Adafruit_DHT
+import Adafruit_DHT
 
 def getInsideWeather():
   return Adafruit_DHT.read_retry(Adafruit_DHT.DHT22, 4)
 
 def getOutsideWeather(city='Madrid,es'):
-  url_w = 'api.openweathermap.org'
+  url_w = 'http://api.openweathermap.org'
   method_w = '/data/2.5/weather?q='+city
 
-  conn_w = httplib.HTTPConnection(url_w)
-  conn_w.request('GET', method_w)
-
-  response_w = conn_w.getresponse()
-  print 'Weather status:', response_w.status, response_w.reason
-
-  data_JSON = response_w.read()
-
-  data_w = json.loads(data_JSON)
-  #print data_JSON
-  celsius = data_w['main']['temp'] - 273.15
-  print data_w['name'], celsius, 'Celsius', data_w['weather'][0]['description']
+  r = requests.get(url_w+method_w)
+  data = r.json()
+  celsius = data['main']['temp'] - 273.15
+  print data['name'], celsius, 'Celsius', data['weather'][0]['description']
 
 def getHollandArt():
   url_art = 'http://api.artsholland.com'
   method_art = '/rest/event.json?locality=amsterdam'
 
   r = requests.get(url_art+method_art)
-  r.json()
-#  data = json.loads(r.json())
-
-  #conn_art = httplib.HTTPConnection(url_art)
-  #conn_art.request('GET', method_art)
-
-  #resp_art = conn_art.getresponse()
-  print r.json()
+  data = r.json()
+  for res in data['results']:
+    if 'description' in res.keys():
+      print 'Evento:', res['description']
+      print 'Inicio:', res['hasBeginning']
+      print 'Fin:', res['hasEnd']
 
 
 
@@ -55,4 +45,8 @@ def emt():
   print r.text
 
 
-getHollandArt()
+while True:
+  getInsideWeather()
+  getOutsideWeather()
+  getHollandArt()
+  time.sleep(15)
